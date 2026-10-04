@@ -1,0 +1,222 @@
+openapi: 3.0.0
+info:
+  title: Crimson Tide Battle API
+  version: 1.0.0
+  description: API for managing battles in the Crimson Tide game
+servers:
+  - url: http://127.0.0.1:8001
+    description: Local development server
+paths:
+  /api/battles:
+    post:
+      summary: Create a new battle
+      operationId: createBattle
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Battle created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BattleResponse'
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /api/battles/{id}:
+    get:
+      summary: Get battle by ID
+      operationId: getBattleById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Battle retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BattleResponse'
+        '404':
+          description: Battle not found
+        '500':
+          description: Internal server error
+  /api/battles/{id}/turns:
+    post:
+      summary: Play a turn in a battle
+      operationId: playTurn
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TurnRequest'
+      responses:
+        '200':
+          description: Turn played successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TurnResult'
+        '400':
+          description: Bad request
+        '404':
+          description: Battle not found
+        '500':
+          description: Internal server error
+  /api/battles/{id}/score:
+    post:
+      summary: Register score for a battle
+      operationId: registerScore
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '200':
+          description: Score registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScoreResponse'
+        '400':
+          description: Bad request
+        '404':
+          description: Battle not found
+        '500':
+          description: Internal server error
+  /api/scores:
+    get:
+      summary: Get all scores
+      operationId: getScores
+      responses:
+        '200':
+          description: Scores retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScoreResponse'
+        '500':
+          description: Internal server error
+components:
+  schemas:
+    TurnRequest:
+      type: object
+      required:
+        - Turn
+        - Action
+      properties:
+        Turn:
+          type: integer
+          description: The turn number
+        Action:
+          type: string
+          description: The action to perform
+    RegisterRequest:
+      type: object
+      required:
+        - Name
+      properties:
+        Name:
+          type: string
+          description: Player name for score registration
+    TurnResult:
+      type: object
+      properties:
+        BattleId:
+          type: string
+          description: Unique identifier for the battle
+        Turn:
+          type: integer
+          description: Current turn number
+        Action:
+          type: string
+          description: Action taken
+        AttackDamage:
+          type: integer
+          description: Damage dealt to boss
+        BossDamage:
+          type: integer
+          description: Damage dealt to hero
+        HeroHp:
+          type: integer
+          description: Current hero HP
+        BossHp:
+          type: integer
+          description: Current boss HP
+        BossStage:
+          type: integer
+          description: Current boss stage
+        Pattern:
+          type: integer
+          description: Current pattern/phase
+        NextTurn:
+          type: integer
+          description: Next turn number
+        Status:
+          type: string
+          description: Current battle status
+    BattleResponse:
+      type: object
+      properties:
+        BattleId:
+          type: string
+          description: Unique identifier for the battle
+        Turn:
+          type: integer
+          description: Current turn number
+        HeroHp:
+          type: integer
+          description: Current hero HP
+        BossHp:
+          type: integer
+          description: Current boss HP
+        BossStage:
+          type: integer
+          description: Current boss stage
+        Pattern:
+          type: integer
+          description: Current pattern/phase
+        Status:
+          type: string
+          description: Current battle status
+    ScoreResponse:
+      type: object
+      properties:
+        Name:
+          type: string
+          description: Player name
+        Turns:
+          type: integer
+          description: Number of turns taken
+        RemainingHp:
+          type: integer
+          description: Remaining HP
+        CreatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when score was created
