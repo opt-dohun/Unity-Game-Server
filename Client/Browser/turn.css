@@ -1,0 +1,60 @@
+/* Full-window arena with the original battle chrome. */
+html, body { height: 100%; overflow: hidden; }
+.shell { max-width: none; width: 100%; height: 100dvh; display: flex; flex-direction: column; padding: 0 16px; }
+.topbar { height: 72px; flex: none; }
+.game-card { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.stage-wrap { flex: 1; min-height: 0; aspect-ratio: auto; background: linear-gradient(#10213355,#0b172a66), url('../UnityGame/Assets/Resources/Background/arena-waterfalls.png') center / cover; }
+canvas { height: 100%; object-fit: cover; }
+.bottom-panel { flex: none; min-height: 63px; }
+.turn-info { display: flex; align-items: center; gap: 25px; color: #f7e4cc; font-size: 12px; letter-spacing: .13em; }
+.turn-info span { color: #a8c6ce; font-size: 11px; letter-spacing: .03em; }
+.turn-controls { flex: none; padding: 12px 0 8px; }
+.action-choices { display: flex; justify-content: center; gap: 12px; }
+.turn-button { width: min(48%,260px); min-height: 63px; background: linear-gradient(120deg,#263f50,#172c3c); border: 1px solid #5b7b88; border-radius: 9px; color: #fff0d8; box-shadow: 0 3px 0 #091522; transition: transform .14s, background .14s; }
+.turn-button:hover:not(:disabled) { background: linear-gradient(120deg,#9e4950,#cb7261); transform: translateY(-2px); }
+.turn-button:disabled { opacity: .45; cursor: default; }
+.turn-button b { display: block; font-size: 17px; }
+.turn-button small { display: block; margin-top: 3px; color: #aec4ca; font-size: 10px; }
+.turn-button:hover small { color: #ffe7d5; }
+.turn-button.subtle { width: 125px; background: #172637; }
+.menu-hint { margin-bottom: 0; }
+.secondary-button { padding: 12px 20px; border: 1px solid #72909c; border-radius: 6px; background: #20384a; color: #fff0d8; font-weight: 800; cursor: pointer; }
+.secondary-button:hover { background: #34566a; }
+.menu-panel > .secondary-button { display: block; margin: 16px auto 0; min-width: 200px; }
+.result-actions, .score-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.result-actions .primary-button { min-width: 150px; }
+.result-actions .secondary-button { min-width: 130px; }
+#registration, #ranking { z-index: 7; }
+.score-panel { width: min(92vw,520px); max-height: 90%; overflow: auto; text-align: center; background: #0d1b2cf2; border: 1px solid #d8aa8699; border-radius: 8px; box-shadow: 0 20px 70px #000a; padding: 24px; }
+.score-panel h2 { color: #fff0d9; font-size: 34px; margin: 4px 0 14px; }
+.score-summary { color: #c6d0d0; font-size: 14px; }
+#registrationForm label { display: block; text-align: left; color: #f0d4ae; margin: 20px 0 7px; font-weight: 800; }
+#playerName { width: 100%; padding: 13px 15px; border: 1px solid #63808d; border-radius: 6px; background: #132637; color: #fff; font: inherit; font-size: 17px; }
+#playerName:focus { outline: 2px solid #e7ae7e; outline-offset: 2px; }
+.score-status { min-height: 24px; color: #b9d5dc; font-size: 12px; margin: 12px 0; }
+.ranking-list { list-style: none; margin: 20px 0; padding: 0; max-height: min(42vh,340px); overflow: auto; }
+.ranking-list li { display: grid; grid-template-columns: 36px 1fr 70px 65px; gap: 8px; align-items: center; text-align: left; padding: 11px; border-bottom: 1px solid #ffffff22; color: #f8ead6; }
+.ranking-list li:first-child { color: #ffe0a1; }
+.ranking-list .rank-number { color: #dfa574; font-weight: 800; }
+.ranking-list .rank-turns, .ranking-list .rank-hp { text-align: right; white-space: nowrap; }
+footer { flex: none; padding: 6px 0 12px; }
+@media (max-width: 900px) {
+  .shell { padding: 0 8px; }
+  .topbar { height: 58px; }
+  .stage-wrap { background-position: center; }
+  canvas { object-fit: contain; transform: translateY(44px); pointer-events: none; }
+  .bottom-panel { min-height: 58px; }
+  .turn-info { display: block; font-size: 10px; }
+  .turn-info span { display: block; font-size: 9px; margin-top: 3px; }
+  .turn-controls { padding: 9px 0; }
+  .action-choices { gap: 6px; }
+  .turn-button { width: 48%; min-height: 61px; padding: 5px; }
+  .turn-button b { font-size: 13px; }
+  .turn-button small { font-size: 8px; }
+  .turn-button.subtle { width: 22%; }
+  .tip { max-width: 42%; text-align: right; }
+  .result-panel { max-width: 90vw; }
+  .result-actions .primary-button, .result-actions .secondary-button { min-width: 118px; padding: 10px; font-size: 12px; }
+  .ranking-list li { grid-template-columns: 26px 1fr 58px 48px; gap: 5px; padding: 9px 4px; font-size: 11px; }
+  footer { padding: 3px 0 7px; }
+}

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#10192a" />
+  <title>붉은 파도 — 보스전</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./turn.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar"><div class="brand"><span class="brand-mark">✦</span><span>붉은 파도 <small>THE CRIMSON TIDE</small></span></div><div class="chapter">CHAPTER 01 <span>·</span> 만개한 해안</div><button id="soundButton" class="icon-button" aria-label="소리 켜기 또는 끄기">♪ <span id="soundLabel">OFF</span></button></header>
+    <section class="game-card" aria-label="횡스크롤 보스전 게임">
+      <div class="stage-wrap"><canvas id="game" width="1280" height="720" aria-label="게임 화면"></canvas>
+        <div class="hud">
+          <div class="hud-player"><div class="hud-label"><span class="diamond">◆</span> ROSE KNIGHT <b id="playerHpText">100 / 100</b></div><div class="bar"><span id="playerHpBar"></span></div><div class="resource"><span>STAMINA</span><div class="resource-bar"><i id="staminaBar"></i></div></div></div>
+          <div class="hud-boss"><div class="hud-label"><b id="bossHpText">100%</b> BLOOMTIDE CRAB <span class="diamond">◆</span></div><div class="bar boss-bar"><span id="bossHpBar"></span></div><div id="phaseLabel" class="phase">PHASE I · 잔잔한 파도</div></div>
+        </div>
+        <div id="banner" class="banner hidden"></div>
+        <div id="menu" class="overlay"><div class="menu-panel"><p class="eyebrow">A TURN-BASED BOSS BATTLE</p><h1>붉은 <em>파도</em></h1><p class="menu-copy">꽃이 피는 해안에서 바다의 수호자와 맞서세요.</p><div class="menu-art"><img src="../../assets/hero-portrait.png" alt="붉은 머리의 기사" /></div><button id="startButton" class="primary-button">전투 시작 <span>→</span></button><button id="menuRankingButton" class="secondary-button">랭킹 보기</button><p class="menu-hint">공격 또는 방어를 골라 보스의 패턴에 대응하세요.</p></div></div>
+        <div id="result" class="overlay hidden"><div class="result-panel"><p id="resultEyebrow" class="eyebrow"></p><h2 id="resultTitle"></h2><p id="resultCopy"></p><div class="result-stats"><span>소요 턴 <b id="resultTurns"></b></span><span>남은 체력 <b id="resultHp"></b></span></div><div class="result-actions"><button id="registerButton" class="primary-button">기록 등록</button><button id="resultRankingButton" class="secondary-button">랭킹 보기</button><button id="retryButton" class="secondary-button">다시 도전 ↻</button></div></div></div>
+        <div id="registration" class="overlay hidden"><div class="score-panel"><p class="eyebrow">REGISTER SCORE</p><h2>기록 등록</h2><p id="registrationSummary" class="score-summary"></p><form id="registrationForm"><label for="playerName">이름</label><input id="playerName" name="name" type="text" maxlength="12" autocomplete="nickname" placeholder="이름을 입력하세요" required /><p id="registrationStatus" class="score-status" role="status"></p><div class="score-actions"><button id="submitScoreButton" class="primary-button" type="submit">등록하기</button><button id="closeRegistrationButton" class="secondary-button" type="button">돌아가기</button></div></form></div></div>
+        <div id="ranking" class="overlay hidden"><div class="score-panel ranking-panel"><p class="eyebrow">HALL OF FAME</p><h2>랭킹</h2><p class="score-summary">적은 턴 수 우선 · 동률이면 남은 체력 우선</p><ol id="rankingList" class="ranking-list"></ol><p id="rankingStatus" class="score-status" role="status"></p><button id="closeRankingButton" class="secondary-button">돌아가기</button></div></div>
+      </div>
+      <div class="bottom-panel"><div class="turn-info"><b id="turnLabel">TURN 01 · PLAYER</b><span id="patternPreview">다음 공격: 집게 휘두르기</span></div><div class="tip"><span class="tip-star">✧</span><span id="tipText">행동을 고르면 보스의 턴이 시작됩니다.</span></div></div>
+    </section>
+    <nav class="turn-controls" aria-label="전투 행동 선택"><div id="actionChoices" class="action-choices"><button id="attackButton" class="turn-button"><b>⚔ 공격</b><small>1–20 무작위 피해 · 1</small></button><button id="guardButton" class="turn-button"><b>◈ 방어</b><small>다음 피해 80% 감소 · 2</small></button></div></nav>
+    <footer>CRIMSON TIDE <span>·</span> BOSS BATTLE PROTOTYPE</footer>
+  </main>
+  <script src="./leaderboard.js"></script>
+  <script src="./turn-game.js"></script>
+</body>
+</html>
