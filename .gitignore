@@ -1,0 +1,29 @@
+**/bin/
+**/obj/
+Server/data/
+Client/UnityGame/Library/
+Client/UnityGame/Temp/
+Client/UnityGame/Logs/
+Client/UnityGame/Builds/
+Client/UnityGame/UserSettings/
+Client/UnityGame/*.csproj
+Client/UnityGame/*.sln
+Client/UnityGame/*.log
+
+# Local/editor files
+.DS_Store
+**/.DS_Store
+**/*.log
+
+# Generated OpenAPI client
+/client-generated/
+
+# Terraform local state, variables, and secrets
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+
+# Native/compiled legacy prototypes
+Server/LegacyC/leaderboard_server
