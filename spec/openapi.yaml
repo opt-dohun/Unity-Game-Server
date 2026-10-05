@@ -2,35 +2,48 @@ openapi: 3.0.0
 info:
   title: Crimson Tide Battle API
   version: 1.0.0
-  description: API for managing battles in the Crimson Tide game
+  description: |
+    서버 판정 턴제 보스전 API.
+    모든 JSON 필드는 camelCase이며, 재시도/중복 요청은 멱등성 기반으로 처리된다.
+    - 같은 `Idempotency-Key`로 전투를 다시 시작하면 200과 함께 기존 전투를 반환한다.
+    - 이미 처리한 `battleId + turn`에 같은 `action`을 재전송하면 저장된 응답을 200으로 반환한다.
+    - 같은 턴에 다른 `action` 또는 순서를 건너뜀이 409로 거부된다.
+    - 점수 등록도 전투당 한 번만 허용되며(201), 재전송은 200, 다른 이름은 409다.
 servers:
   - url: http://127.0.0.1:8001
     description: Local development server
 paths:
   /api/battles:
     post:
-      summary: Create a new battle
+      summary: Start a new battle
       operationId: createBattle
+      description: 빈 JSON 본문과 `Idempotency-Key`(8–128자) 헤더로 전투를 시작한다.
       parameters:
         - name: Idempotency-Key
           in: header
-          required: false
+          required: true
           schema:
             type: string
+            minLength: 8
+            maxLength: 128
       responses:
+        '201':
+          description: Battle created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BattleResponse'
         '200':
-          description: Battle created successfully
+          description: Same Idempotency-Key already started a battle (replayed)
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/BattleResponse'
         '400':
-          description: Bad request
-        '500':
-          description: Internal server error
+          description: Idempotency-Key missing or wrong length
   /api/battles/{id}:
     get:
-      summary: Get battle by ID
+      summary: Get battle by id
       operationId: getBattleById
       parameters:
         - name: id
@@ -40,19 +53,18 @@ paths:
             type: string
       responses:
         '200':
-          description: Battle retrieved successfully
+          description: Battle retrieved
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/BattleResponse'
         '404':
           description: Battle not found
-        '500':
-          description: Internal server error
   /api/battles/{id}/turns:
     post:
       summary: Play a turn in a battle
       operationId: playTurn
+      description: 서버가 PCG32 난수로 피해량을 계산해 다음 상태를 반환한다.
       parameters:
         - name: id
           in: path
@@ -67,20 +79,20 @@ paths:
               $ref: '#/components/schemas/TurnRequest'
       responses:
         '200':
-          description: Turn played successfully
+          description: Turn played (first send or exact replay of the stored response)
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TurnResult'
         '400':
-          description: Bad request
+          description: Invalid action or turn number
         '404':
           description: Battle not found
-        '500':
-          description: Internal server error
+        '409':
+          description: Turn already used with a different action, or turn is out of order
   /api/battles/{id}/score:
     post:
-      summary: Register score for a battle
+      summary: Register score for a won battle
       operationId: registerScore
       parameters:
         - name: id
@@ -95,128 +107,152 @@ paths:
             schema:
               $ref: '#/components/schemas/RegisterRequest'
       responses:
+        '201':
+          description: Score registered (first time for this battle)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScoreResponse'
         '200':
-          description: Score registered successfully
+          description: Same name resubmitted (replayed, returns stored score)
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ScoreResponse'
         '400':
-          description: Bad request
+          description: Invalid name (empty, over 12 characters, or control characters)
         '404':
           description: Battle not found
-        '500':
-          description: Internal server error
+        '409':
+          description: Battle not won, or a different name was already registered
   /api/scores:
     get:
-      summary: Get all scores
+      summary: Get top 20 scores
       operationId: getScores
       responses:
         '200':
-          description: Scores retrieved successfully
+          description: Scores ordered by fewest turns, then highest remaining hp
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ScoreResponse'
-        '500':
-          description: Internal server error
+                type: object
+                required:
+                  - scores
+                properties:
+                  scores:
+                    type: array
+                    maxItems: 20
+                    items:
+                      $ref: '#/components/schemas/ScoreResponse'
 components:
   schemas:
     TurnRequest:
       type: object
       required:
-        - Turn
-        - Action
+        - turn
+        - action
       properties:
-        Turn:
+        turn:
           type: integer
-          description: The turn number
-        Action:
+          minimum: 1
+          description: The turn number to play
+        action:
           type: string
-          description: The action to perform
+          enum: [attack, guard]
+          description: The action to take
     RegisterRequest:
       type: object
       required:
-        - Name
+        - name
       properties:
-        Name:
+        name:
           type: string
+          minLength: 1
+          maxLength: 12
           description: Player name for score registration
     TurnResult:
       type: object
       properties:
-        BattleId:
+        battleId:
           type: string
-          description: Unique identifier for the battle
-        Turn:
+          description: Unique battle identifier
+        turn:
           type: integer
-          description: Current turn number
-        Action:
+          description: The turn that was played
+        action:
           type: string
-          description: Action taken
-        AttackDamage:
+          enum: [attack, guard]
+          description: Action taken on this turn
+        attackDamage:
           type: integer
-          description: Damage dealt to boss
-        BossDamage:
+          minimum: 0
+          maximum: 20
+          description: Damage dealt to the boss (0 on guard)
+        bossDamage:
           type: integer
-          description: Damage dealt to hero
-        HeroHp:
+          minimum: 0
+          description: Damage dealt to the hero
+        heroHp:
           type: integer
           description: Current hero HP
-        BossHp:
+        bossHp:
           type: integer
           description: Current boss HP
-        BossStage:
+        bossStage:
           type: integer
-          description: Current boss stage
-        Pattern:
+          enum: [1, 2]
+          description: Boss stage (2 when boss HP is 50 or below)
+        pattern:
           type: integer
-          description: Current pattern/phase
-        NextTurn:
+          enum: [0, 1, 2]
+          description: Boss attack pattern used on the played turn
+        nextTurn:
           type: integer
-          description: Next turn number
-        Status:
+          description: Next turn number (unchanged when the battle ended)
+        status:
           type: string
+          enum: [playing, won, lost]
           description: Current battle status
     BattleResponse:
       type: object
       properties:
-        BattleId:
+        battleId:
           type: string
-          description: Unique identifier for the battle
-        Turn:
+          description: Unique battle identifier
+        turn:
           type: integer
-          description: Current turn number
-        HeroHp:
+          description: Current (next) turn number
+        heroHp:
           type: integer
           description: Current hero HP
-        BossHp:
+        bossHp:
           type: integer
           description: Current boss HP
-        BossStage:
+        bossStage:
           type: integer
-          description: Current boss stage
-        Pattern:
+          enum: [1, 2]
+          description: Boss stage (2 when boss HP is 50 or below)
+        pattern:
           type: integer
-          description: Current pattern/phase
-        Status:
+          enum: [0, 1, 2]
+          description: Current boss attack pattern
+        status:
           type: string
+          enum: [playing, won, lost]
           description: Current battle status
     ScoreResponse:
       type: object
       properties:
-        Name:
+        name:
           type: string
           description: Player name
-        Turns:
+        turns:
           type: integer
-          description: Number of turns taken
-        RemainingHp:
+          description: Number of turns taken to win
+        remainingHp:
           type: integer
-          description: Remaining HP
-        CreatedAt:
+          description: Hero HP remaining when the battle ended
+        createdAt:
           type: string
           format: date-time
-          description: Timestamp when score was created
+          description: When the score was registered
