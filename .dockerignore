@@ -1,0 +1,35 @@
+# Docker 빌드 컨텍스트에서 제외할 파일.
+# 빌드 컨텍스트는 저장소 루트에서 지정한다.
+#   docker build -t crimson-tide-server -f Infra/docker/server/Dockerfile .
+
+**/.git/
+**/.gitignore
+**/.DS_Store
+**/*.log
+
+# .NET 빌드 산출물
+**/bin/
+**/obj/
+
+# 로컬 실행 데이터베이스
+Server/data/
+
+# Unity 생성물/캐시 (서버 이미지에는 불필요)
+Client/UnityGame/Library/
+Client/UnityGame/Temp/
+Client/UnityGame/Logs/
+Client/UnityGame/Builds/
+Client/UnityGame/UserSettings/
+Client/UnityGame/*.csproj
+Client/UnityGame/*.sln
+
+# OpenAPI 생성 코드, Terraform 로컬 상태/비밀
+client-generated/
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+
+# 네이티브 컴파일 산출물
+Server/LegacyC/leaderboard_server

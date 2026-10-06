@@ -5,7 +5,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace CrimsonTide.Server.Service;
 
-/// <summary>SQLite 저장소에 실제로 접속해 읽기가 되는지 확인하는 준비 상태(readiness) 검사.</summary>
+/// <summary>설정된 관계형 저장소에 실제 접속해 읽기가 되는지 확인하는 readiness 검사.</summary>
 public sealed class BattleStoreHealthCheck(BattleStore store) : IHealthCheck
 {
     public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
@@ -17,12 +17,12 @@ public sealed class BattleStoreHealthCheck(BattleStore store) : IHealthCheck
             command.CommandText = "SELECT 1";
             long probe = Convert.ToInt64(command.ExecuteScalar(), CultureInfo.InvariantCulture);
             return Task.FromResult(probe == 1
-                ? HealthCheckResult.Healthy("SQLite에 연결할 수 있습니다.")
-                : HealthCheckResult.Unhealthy($"SQLite가 예상 밖의 값을 반환했습니다: {probe}"));
+                ? HealthCheckResult.Healthy($"{store.Provider}에 연결할 수 있습니다.")
+                : HealthCheckResult.Unhealthy($"{store.Provider}가 예상 밖의 값을 반환했습니다: {probe}"));
         }
         catch (Exception exception)
         {
-            return Task.FromResult(HealthCheckResult.Unhealthy("SQLite에 연결할 수 없습니다.", exception));
+            return Task.FromResult(HealthCheckResult.Unhealthy($"{store.Provider}에 연결할 수 없습니다.", exception));
         }
     }
 }
