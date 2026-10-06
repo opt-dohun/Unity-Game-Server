@@ -22,19 +22,28 @@ var storeOptions = builder.Configuration
     .GetSection(BattleStoreOptions.SectionName)
     .Get<BattleStoreOptions>() ?? new BattleStoreOptions();
 
-// CRIMSON_DB_PATH는 문서화된 검사 절차를 위해 계속 지원하며 설정보다 우선한다.
+// CRIMSON_DB_PATH는 SQLite 경로 override, CRIMSON_MYSQL_CONNECTION_STRING은 배포 비밀값이다.
 string? overridePath = Environment.GetEnvironmentVariable("CRIMSON_DB_PATH");
 if (!string.IsNullOrWhiteSpace(overridePath))
     storeOptions.DatabasePath = overridePath;
+string? mysqlConnectionString = Environment.GetEnvironmentVariable("CRIMSON_MYSQL_CONNECTION_STRING")
+    ?? builder.Configuration.GetConnectionString("BattleStore")
+    ?? storeOptions.MySqlConnectionString;
+if (builder.Environment.IsProduction() && !storeOptions.Provider.Equals("mysql", StringComparison.OrdinalIgnoreCase))
+    throw new InvalidOperationException("Production 환경은 BattleStore:Provider=mysql로 설정해야 합니다.");
 
 string databasePath = Path.IsPathRooted(storeOptions.DatabasePath)
     ? storeOptions.DatabasePath
     : Path.Combine(builder.Environment.ContentRootPath, storeOptions.DatabasePath);
 
-var store = new BattleStore(databasePath);
+var store = new BattleStore(storeOptions.Provider, databasePath, mysqlConnectionString,
+    storeOptions.LockMode, storeOptions.JournalMode);
 store.Initialize();
 
+var serverMetrics = new ServerMetrics();
+
 builder.Services.AddSingleton(store);
+builder.Services.AddSingleton(serverMetrics);
 builder.Services.AddSingleton<BattleApplicationService>();
 builder.Services.AddSingleton<BattleStoreHealthCheck>();
 
@@ -53,7 +62,8 @@ builder.Services.AddHealthChecks()
 
 var app = builder.Build();
 
-app.Logger.LogInformation("Crimson Tide 시작 · 데이터베이스={DatabasePath}", databasePath);
+app.Logger.LogInformation("Crimson Tide 시작 · 저장소={Provider} · journal={JournalMode} · 락모드={LockMode}",
+    store.Provider, store.JournalMode, storeOptions.LockMode);
 
 app.UseCors("local-preview");
 app.MapBattleEndpoints();
