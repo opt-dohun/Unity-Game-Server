@@ -21,11 +21,10 @@ RUN dotnet publish Server/CrimsonTide.Server.csproj -c Release -o /app/publish /
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 
-# 컨테이너 안에서는 모든 인터페이스로 바인딩한다. (Program.cs는 URL을 하드코딩하지 않는다)
+# 배포는 외부 MySQL을 사용한다. 연결 문자열은 CRIMSON_MYSQL_CONNECTION_STRING으로 secret 주입.
+ENV BattleStore__Provider=mysql
+ENV ASPNETCORE_ENVIRONMENT=Production
 ENV ASPNETCORE_URLS=http://+:8080
-# 저장 데이터는 볼륨에 둔다. CRIMSON_DB_PATH가 설정 파일보다 우선한다.
-ENV CRIMSON_DB_PATH=/data/crimson-tide.db
-VOLUME ["/data"]
 EXPOSE 8080
 
 COPY --from=build /app/publish .
