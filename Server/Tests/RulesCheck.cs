@@ -1,4 +1,4 @@
-using CrimsonTide.Server;
+using CrimsonTide.Server.Domain;
 
 var battle = new BattleState { Id = "test" };
 BattleRules.Seed(battle, 12345, 7);
