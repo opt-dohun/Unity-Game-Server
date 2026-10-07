@@ -27,3 +27,10 @@ Client/UnityGame/*.log
 
 # Native/compiled legacy prototypes
 Server/LegacyC/leaderboard_server
+
+# Load test artifacts (재생성 가능: node loadtest/run_comparison.mjs)
+# DB 파일과 k6 원시 덤프는 용량이 커서 제외하고, 요약 JSON·로그는 측정 증거로 남긴다.
+loadtest/**/*.sqlite
+loadtest/**/*.sqlite-wal
+loadtest/**/*.sqlite-shm
+loadtest/**/raw_k6_*.json
